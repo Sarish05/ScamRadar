@@ -1,5 +1,8 @@
 const user = require("../models/user");
 const {createTokenForUser} = require("../Services/Authentication")
+const dotenv = require("dotenv")
+dotenv.config()
+const FRONTEND_URL = process.env.FRONTEND_URL;
 async function handleUserSignUp(req, res) {
   console.log("Request to sign up received!!");
 
@@ -103,7 +106,7 @@ async function handleSignUpUserViaGoogleAuth(req, res) {
     const user = req.user; // Comes from Passport Google OAuth strategy
 
     if (!user) {
-      return res.redirect("http://localhost:5173/login?error=oauth_failed");
+      return res.redirect(`${FRONTEND_URL}/login?error=oauth_failed`);
     }
 
     const token = createTokenForUser(user);
@@ -117,10 +120,10 @@ async function handleSignUpUserViaGoogleAuth(req, res) {
     });
 
     // Redirect to frontend dashboard or callback page
-    return res.redirect("http://localhost:5173/dashboard");
+    return res.redirect(`${FRONTEND_URL}/dashboard`);
   } catch (err) {
     console.error("OAuth signup error:", err);
-    return res.redirect("http://localhost:5173/login?error=oauth_failed");
+    return res.redirect(`${FRONTEND_URL}/login?error=oauth_failed`);
   }
 }
 
