@@ -18,6 +18,8 @@ build/
 .env.test.local
 .env.production.local
 *.env
+!.env.production.example
+!.env.example
 
 # OS generated files
 .DS_Store

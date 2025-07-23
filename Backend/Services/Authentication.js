@@ -1,6 +1,7 @@
 const JWT = require("jsonwebtoken");
-
-const secret = "SSO874596321DSJHJDB";
+const dotenv = require('dotenv')
+dotenv.config();
+const secret = process.env.JWT_SECRET_KEY;
 
 function createTokenForUser(user) {
   const payload = {
