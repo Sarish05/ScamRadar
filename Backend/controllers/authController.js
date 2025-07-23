@@ -90,8 +90,8 @@ const handleUserLogin = async (req, res) => {
     .status(200)
     .cookie("token", token, {
       httpOnly: true,
-      secure: false,
-      sameSite: "Lax",
+      secure: true,
+      sameSite:"None",
       maxAge: 24 * 60 * 60 * 1000,
     })
     .json({ msg: "Sign In succedded", user: User });
@@ -111,8 +111,8 @@ async function handleSignUpUserViaGoogleAuth(req, res) {
     // Set the token as an httpOnly cookie
     res.cookie("token", token, {
       httpOnly: true,
-      secure: false, // Set to true in production with HTTPS
-      sameSite: "Lax",
+      secure: true, // Set to true in production with HTTPS
+      sameSite: "None",
       maxAge: 24 * 60 * 60 * 1000, // 24 hours
     });
 
