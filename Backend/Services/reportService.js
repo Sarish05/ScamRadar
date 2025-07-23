@@ -2,7 +2,7 @@ const path = require('path');
 const fs = require('fs');
 const fsPromises = require('fs/promises');
 const os = require('os');
-const { cloudinary } = require('../config/cloudinary');
+const { cloudinary } = require('../Config/cloudinary');
 const { generatePDF } = require('./pdfGeneratorService');
 const ScanRecord = require('../models/scanRecord');
 
