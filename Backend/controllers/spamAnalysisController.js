@@ -80,15 +80,23 @@ async function analyzeSpamCall(req, res) {
     console.log("📝 Scan record saved with ID:", scanRecord._id);
 
     // Step 4: Generate PDF Report automatically
+    let reportUrl = null;
+    let reportMessage = null;
+    
     try {
       console.log("🔄 Auto-generating PDF report...");
       const reportResult = await generateAndUploadReport(scanRecord);
-      console.log(
-        "✅ PDF report generated automatically:",
-        reportResult.reportUrl
-      );
+      
+      if (reportResult.success) {
+        reportUrl = reportResult.reportUrl;
+        console.log("✅ PDF report generated automatically:", reportUrl);
+      } else {
+        console.log("⚠️ PDF generation skipped:", reportResult.message);
+        reportMessage = reportResult.message;
+      }
     } catch (reportError) {
       console.error("⚠️ Failed to auto-generate report:", reportError.message);
+      reportMessage = "PDF generation temporarily unavailable";
       // Don't fail the main request if report generation fails
     }
 
@@ -108,7 +116,8 @@ async function analyzeSpamCall(req, res) {
             transcriptionResult.contentSafety?.summary || "No issues detected",
           sentiment: transcriptionResult.sentiment?.[0]?.sentiment || "Neutral",
         },
-        reportUrl: scanRecord.report?.reportUrl || null,
+        reportUrl: reportUrl || scanRecord.report?.reportUrl || null,
+        reportMessage: reportMessage,
         createdAt: scanRecord.createdAt,
       },
     });

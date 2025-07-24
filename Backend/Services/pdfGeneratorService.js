@@ -532,7 +532,8 @@ async function generatePDF(scanData, outputPath) {
   try {
     console.log('🚀 Generating modern PDF report...');
     
-    const browser = await puppeteer.launch({
+    // Configure Puppeteer for different environments
+    const puppeteerConfig = {
       headless: true,
       args: [
         '--no-sandbox',
@@ -545,13 +546,29 @@ async function generatePDF(scanData, outputPath) {
         '--single-process',
         '--disable-background-timer-throttling',
         '--disable-backgrounding-occluded-windows',
-        '--disable-renderer-backgrounding'
-      ],
-      // Use system Chrome if available, otherwise use bundled Chromium
-      executablePath: process.env.NODE_ENV === 'production' 
-        ? process.env.PUPPETEER_EXECUTABLE_PATH || '/usr/bin/google-chrome'
-        : undefined
-    });
+        '--disable-renderer-backgrounding',
+        '--disable-features=TranslateUI',
+        '--disable-ipc-flooding-protection'
+      ]
+    };
+
+    // Only set executablePath in production if Chrome is available
+    if (process.env.NODE_ENV === 'production') {
+      // Try to use system Chrome, fallback to Puppeteer's bundled Chromium
+      try {
+        const fs = require('fs');
+        if (fs.existsSync('/usr/bin/google-chrome')) {
+          puppeteerConfig.executablePath = '/usr/bin/google-chrome';
+        } else if (fs.existsSync('/usr/bin/chromium-browser')) {
+          puppeteerConfig.executablePath = '/usr/bin/chromium-browser';
+        }
+        // If neither exists, let Puppeteer use its bundled version
+      } catch (error) {
+        console.log('Using Puppeteer bundled Chromium');
+      }
+    }
+
+    const browser = await puppeteer.launch(puppeteerConfig);
     
     const page = await browser.newPage();
     

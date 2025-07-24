@@ -16,8 +16,19 @@ async function generateAndUploadReport(scanData) {
     const filename = `scamshield-report-${scanData._id}-${timestamp}.pdf`;
     const tempPath = path.join(os.tmpdir(), filename);
 
-    // Generate PDF to temporary location
-    await generatePDF(scanData, tempPath);
+    // Generate PDF to temporary location with error handling
+    try {
+      await generatePDF(scanData, tempPath);
+    } catch (pdfError) {
+      console.error('❌ PDF Generation failed:', pdfError.message);
+      // Return a graceful fallback response
+      return {
+        success: false,
+        error: 'PDF generation temporarily unavailable',
+        message: 'Report data saved successfully, but PDF generation failed. You can still view your scan results.',
+        reportUrl: null
+      };
+    }
 
     console.log('📤 Uploading PDF to Cloudinary...');
 

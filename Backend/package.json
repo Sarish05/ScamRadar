@@ -10,8 +10,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node index.js",
     "dev": "nodemon index.js",
-    "build": "npm install && npx puppeteer browsers install chrome",
-    "postinstall": "npx puppeteer browsers install chrome"
+    "build": "npm install",
+    "postinstall": "npx puppeteer browsers install chrome || echo 'Chrome installation failed, using bundled Chromium'"
   },
   "engines": {
     "node": "18.x"
