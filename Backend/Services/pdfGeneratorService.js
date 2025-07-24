@@ -541,8 +541,16 @@ async function generatePDF(scanData, outputPath) {
         '--disable-accelerated-2d-canvas',
         '--no-first-run',
         '--no-zygote',
-        '--disable-gpu'
-      ]
+        '--disable-gpu',
+        '--single-process',
+        '--disable-background-timer-throttling',
+        '--disable-backgrounding-occluded-windows',
+        '--disable-renderer-backgrounding'
+      ],
+      // Use system Chrome if available, otherwise use bundled Chromium
+      executablePath: process.env.NODE_ENV === 'production' 
+        ? process.env.PUPPETEER_EXECUTABLE_PATH || '/usr/bin/google-chrome'
+        : undefined
     });
     
     const page = await browser.newPage();
