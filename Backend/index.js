@@ -59,7 +59,6 @@ app.use(helmet());
 app.use(morgan("combined"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(cookieParser());
 
 // Initialize Passport middleware
 app.use(passport.initialize());
@@ -72,6 +71,7 @@ app.use(
     allowedHeaders: ["Content-Type", "Authorization", "Cookie"],
   })
 );
+app.use(cookieParser());
 
 app.use("/api/auth", authRoutes);
 app.use("/api/token", tokenRoutes);

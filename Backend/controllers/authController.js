@@ -101,6 +101,8 @@ const handleUserLogin = async (req, res) => {
       secure: isProduction,
       sameSite: isProduction ? "None" : "Lax",
       maxAge: 24 * 60 * 60 * 1000,
+      domain : "scam-radar.vercel.app",
+      path : "/",
     })
     .json({ msg: "Sign In succedded", user: User });
 };
@@ -122,7 +124,9 @@ async function handleSignUpUserViaGoogleAuth(req, res) {
       httpOnly: true,
       secure: isProduction,
       sameSite: isProduction ? "None" : "Lax",
-      maxAge: 24 * 60 * 60 * 1000, // 24 hours
+      maxAge: 24 * 60 * 60 * 1000, 
+      domain : "scam-radar.vercel.app",
+      path : "/",
     });
 
     // Redirect to frontend dashboard or callback page
