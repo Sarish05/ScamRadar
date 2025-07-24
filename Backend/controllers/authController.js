@@ -56,10 +56,12 @@ async function handleUserSignUp(req, res) {
 
 async function handleUserLogout(req, res) {
   try {
+    const isProduction = process.env.NODE_ENV === 'production';
+    
     res.clearCookie("token", {
       httpOnly: true,
-      secure: false,
-      sameSite: "Lax",
+      secure: isProduction,
+      sameSite: isProduction ? "None" : "Lax",
     });
     console.log("User logged out successfully");
 
@@ -89,12 +91,15 @@ const handleUserLogin = async (req, res) => {
 
   console.log("Token of user: ", User.token);
   const token = User.token;
+  
+  const isProduction = process.env.NODE_ENV === 'production';
+  
   return res
     .status(200)
     .cookie("token", token, {
       httpOnly: true,
-      secure: true,
-      sameSite:"None",
+      secure: isProduction,
+      sameSite: isProduction ? "None" : "Lax",
       maxAge: 24 * 60 * 60 * 1000,
     })
     .json({ msg: "Sign In succedded", user: User });
@@ -110,12 +115,13 @@ async function handleSignUpUserViaGoogleAuth(req, res) {
     }
 
     const token = createTokenForUser(user);
+    const isProduction = process.env.NODE_ENV === 'production';
 
     // Set the token as an httpOnly cookie
     res.cookie("token", token, {
       httpOnly: true,
-      secure: true, // Set to true in production with HTTPS
-      sameSite: "None",
+      secure: isProduction,
+      sameSite: isProduction ? "None" : "Lax",
       maxAge: 24 * 60 * 60 * 1000, // 24 hours
     });
 

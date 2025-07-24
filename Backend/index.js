@@ -34,6 +34,7 @@ const multer = require("multer");
 const cookieParser = require("cookie-parser");
 const helmet = require("helmet");
 const morgan = require("morgan");
+const passport = require("passport");
 //const spamRoute = require("./routes/spamRoutes.js");
 require("dotenv").config();
 
@@ -47,6 +48,10 @@ const spamRoute = require("./routes/spamRoutes.js");
 const reportRoute = require("./routes/reportRoutes.js");
 
 const tokenRoutes = require("./routes/tokenRoute.js");
+
+// Initialize Passport
+require("./Config/passport.js")(passport);
+
 connectMongoDB(process.env.MONGO_URL);
 
 //Middlewares
@@ -55,12 +60,16 @@ app.use(morgan("combined"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+
+// Initialize Passport middleware
+app.use(passport.initialize());
+
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL,
+    origin: process.env.FRONTEND_URL || "http://localhost:3000",
     credentials: true,
-    // methods: ["GET", "POST", "PUT", "DELETE"],
-    // allowedHeaders: ["Content-Type", "Authorization"],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "Cookie"],
   })
 );
 
@@ -68,6 +77,15 @@ app.use("/api/auth", authRoutes);
 app.use("/api/token", tokenRoutes);
 app.use("/api/spam-detection", spamRoute);
 app.use("/api/report", reportRoute);
+
+// Health check route
+app.get("/", (req, res) => {
+  res.json({ message: "ScamRadar API is running!", timestamp: new Date().toISOString() });
+});
+
+app.get("/health", (req, res) => {
+  res.json({ status: "OK", timestamp: new Date().toISOString() });
+});
 
 // const PORT = 5000;
 
