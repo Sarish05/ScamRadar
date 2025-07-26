@@ -7,6 +7,7 @@ const checkUserAuthLoader = async () => {
       API_ENDPOINTS.TOKEN.GET_DETAILS,
       {
         withCredentials: true,
+        timeout: 3000,
       }
     );
     console.log("Loader ", res.data);
