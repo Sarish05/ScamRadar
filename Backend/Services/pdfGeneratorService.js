@@ -1,4 +1,6 @@
-const htmlPdf = require('html-pdf-node'); // Changed from puppeteer
+const puppeteer = require('puppeteer-core');
+const chromium = require('@sparticuz/chromium');
+
 const fs = require('fs');
 const path = require('path');
 
@@ -527,46 +529,50 @@ function generateHTML(scanData) {
   `;
 }
 
-// Replace ONLY the generatePDF function - this is the new lightweight version
+
+// Your existing color palette and helper functions stay the same...
+
 async function generatePDF(scanData, outputPath) {
+  let browser;
   try {
-    console.log('🚀 Generating modern PDF report with html-pdf-node...');
+    console.log('🚀 Generating PDF with serverless Chromium...');
     
-    const htmlContent = generateHTML(scanData); // Your existing HTML function stays
+    // This works on Render without any Chrome installation!
+    browser = await puppeteer.launch({
+      args: chromium.args,
+      defaultViewport: chromium.defaultViewport,
+      executablePath: await chromium.executablePath(),
+      headless: chromium.headless,
+      ignoreHTTPSErrors: true,
+    });
     
-    const options = {
+    const page = await browser.newPage();
+    
+    const htmlContent = generateHTML(scanData);
+    
+    await page.setContent(htmlContent, { 
+      waitUntil: 'networkidle0',
+      timeout: 30000 
+    });
+    
+    await page.pdf({
+      path: outputPath,
       format: 'A4',
       printBackground: true,
-      margin: {
-        top: '0px',
-        right: '0px',
-        bottom: '0px',
-        left: '0px'
-      },
-      args: [
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
-        '--disable-dev-shm-usage',
-        '--disable-gpu'
-      ]
-    };
-
-    const file = { content: htmlContent };
+      margin: { top: '0px', right: '0px', bottom: '0px', left: '0px' }
+    });
     
-    // This is the new approach - no browser.launch() needed
-    const pdfBuffer = await htmlPdf.generatePdf(file, options);
-    
-    fs.writeFileSync(outputPath, pdfBuffer);
-    
-    console.log('✅ Modern PDF generated successfully:', outputPath);
+    console.log('✅ PDF generated successfully:', outputPath);
     return outputPath;
     
   } catch (error) {
     console.error('❌ Error generating PDF:', error);
     throw error;
+  } finally {
+    if (browser) {
+      await browser.close();
+    }
   }
 }
 
-module.exports = {
-  generatePDF
-};
+module.exports = { generatePDF };
