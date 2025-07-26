@@ -33,7 +33,8 @@ export default function Sidebar({
     { id: "history", label: "Scan History", icon: History },
     { id: "education", label: "Education Center", icon: BookOpen },
   ];
-  const {setUser} = useAuth()
+  const {setUser, setIsAuthenticated} = useAuth()
+
   const handleLogout = async () => {
     try {
       const loadingToast = toast.loading("Signing out...");
@@ -46,6 +47,7 @@ export default function Sidebar({
       );
       if (response.data?.msg === "success") {
         setUser(null);
+        setIsAuthenticated(false);
         toast.success("Successfully signed out!", { id: loadingToast });
         navigate("/");
       } else {
