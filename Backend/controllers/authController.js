@@ -94,14 +94,17 @@ const handleUserLogin = async (req, res) => {
 
   console.log("Token of user: ", User.token);
   const token = User.token;
+  // For Render deployment, force secure cookies
+  const isSecure = req.secure || req.get('x-forwarded-proto') === 'https';
   
   const isProduction = process.env.NODE_ENV === 'production';
-  
+  console.log("isProd : ",isProduction)
+  console.log("isSecure : ",isSecure)
   return res
     .status(200)
     .cookie("token", token, {
       httpOnly: true,
-      secure: isProduction,
+      secure: isSecure,
       sameSite: isProduction ? "None" : "Lax",
       maxAge: 24 * 60 * 60 * 1000,
       // domain : "scam-radar.vercel.app",
