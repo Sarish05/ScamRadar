@@ -1,4 +1,4 @@
-const puppeteer = require('puppeteer');
+const htmlPdf = require('html-pdf-node'); // Changed from puppeteer
 const fs = require('fs');
 const path = require('path');
 
@@ -527,71 +527,36 @@ function generateHTML(scanData) {
   `;
 }
 
-// Add this function at the top of your file
-function getPuppeteerConfig() {
-  if (process.env.NODE_ENV === 'production') {
-    return {
-      args: [
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
-        '--disable-dev-shm-usage',
-        '--disable-accelerated-2d-canvas',
-        '--no-first-run',
-        '--no-zygote',
-        '--single-process',
-        '--disable-gpu'
-      ],
-      headless: true,
-      executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || '/usr/bin/chromium-browser'
-    };
-  } else {
-    return {
-      headless: true
-    };
-  }
-}
-// Main function to generate PDF (same name as original)
+// Replace ONLY the generatePDF function - this is the new lightweight version
 async function generatePDF(scanData, outputPath) {
-  let browser;
   try {
-    console.log('🚀 Generating modern PDF report...');
+    console.log('🚀 Generating modern PDF report with html-pdf-node...');
     
-    const config = getPuppeteerConfig();
-    console.log('Puppeteer config:', config);
+    const htmlContent = generateHTML(scanData); // Your existing HTML function stays
     
-    browser = await puppeteer.launch(config); // Use the config here
-    
-    const page = await browser.newPage();
-    
-    await page.setViewport({
-      width: 1200,
-      height: 800,
-      deviceScaleFactor: 1
-    });
-    
-    const htmlContent = generateHTML(scanData);
-    
-    await page.setContent(htmlContent, { 
-      waitUntil: 'networkidle0',
-      timeout: 30000 
-    });
-    
-    await page.evaluateHandle('document.fonts.ready');
-    
-    await page.pdf({
-      path: outputPath,
+    const options = {
       format: 'A4',
       printBackground: true,
-      preferCSSPageSize: false,
       margin: {
         top: '0px',
         right: '0px',
         bottom: '0px',
         left: '0px'
       },
-      scale: 1.0,
-      displayHeaderFooter: false
-    });
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-gpu'
+      ]
+    };
+
+    const file = { content: htmlContent };
+    
+    // This is the new approach - no browser.launch() needed
+    const pdfBuffer = await htmlPdf.generatePdf(file, options);
+    
+    fs.writeFileSync(outputPath, pdfBuffer);
     
     console.log('✅ Modern PDF generated successfully:', outputPath);
     return outputPath;
@@ -599,10 +564,6 @@ async function generatePDF(scanData, outputPath) {
   } catch (error) {
     console.error('❌ Error generating PDF:', error);
     throw error;
-  } finally {
-    if (browser) {
-      await browser.close();
-    }
   }
 }
 
