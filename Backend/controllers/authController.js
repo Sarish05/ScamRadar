@@ -73,9 +73,12 @@ async function handleUserLogout(req, res) {
 }
 
 const handleUserLogin = async (req, res) => {
+  console.log("Coming..............")
   if (!req.body || !req.body.email || !req.body.password) {
     return res.status(400).json({ msg: "Invalid fields Entered!!!" });
   }
+
+  console.log("Request for login received....")
 
   const { email, password } = req.body;
   if (!email || !password) {
@@ -102,7 +105,7 @@ const handleUserLogin = async (req, res) => {
       sameSite: isProduction ? "None" : "Lax",
       maxAge: 24 * 60 * 60 * 1000,
       // domain : "scam-radar.vercel.app",
-      // path : "/",
+      path : "/",
     })
     .json({ msg: "Sign In succedded", user: User });
 };
@@ -118,7 +121,7 @@ async function handleSignUpUserViaGoogleAuth(req, res) {
 
     const token = createTokenForUser(user);
     const isProduction = process.env.NODE_ENV === 'production';
-
+    
     // Set the token as an httpOnly cookie
     res.cookie("token", token, {
       httpOnly: true,
@@ -126,7 +129,7 @@ async function handleSignUpUserViaGoogleAuth(req, res) {
       sameSite: isProduction ? "None" : "Lax",
       maxAge: 24 * 60 * 60 * 1000, 
       // domain : "scam-radar.vercel.app",
-      // path : "/",
+      path : "/",
     });
 
     // Redirect to frontend dashboard or callback page
