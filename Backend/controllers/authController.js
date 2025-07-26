@@ -123,14 +123,18 @@ async function handleSignUpUserViaGoogleAuth(req, res) {
     }
 
     const token = createTokenForUser(user);
+   const isSecure = req.secure || req.get('x-forwarded-proto') === 'https';
+  
     const isProduction = process.env.NODE_ENV === 'production';
+    console.log("isProd : ",isProduction)
+    console.log("isSecure : ",isSecure)
     
     // Set the token as an httpOnly cookie
     res.cookie("token", token, {
       httpOnly: true,
-      secure: isProduction,
+      secure: isSecure,
       sameSite: isProduction ? "None" : "Lax",
-      maxAge: 24 * 60 * 60 * 1000, 
+      maxAge: 24 * 60 * 60 * 1000,
       // domain : "scam-radar.vercel.app",
       path : "/",
     });
