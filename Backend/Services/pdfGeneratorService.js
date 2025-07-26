@@ -527,14 +527,10 @@ function generateHTML(scanData) {
   `;
 }
 
-// Main function to generate PDF (same name as original)
-async function generatePDF(scanData, outputPath) {
-  try {
-    console.log('🚀 Generating modern PDF report...');
-    
-    // Configure Puppeteer for different environments
-    const puppeteerConfig = {
-      headless: true,
+// Add this function at the top of your file
+function getPuppeteerConfig() {
+  if (process.env.NODE_ENV === 'production') {
+    return {
       args: [
         '--no-sandbox',
         '--disable-setuid-sandbox',
@@ -542,33 +538,28 @@ async function generatePDF(scanData, outputPath) {
         '--disable-accelerated-2d-canvas',
         '--no-first-run',
         '--no-zygote',
-        '--disable-gpu',
         '--single-process',
-        '--disable-background-timer-throttling',
-        '--disable-backgrounding-occluded-windows',
-        '--disable-renderer-backgrounding',
-        '--disable-features=TranslateUI',
-        '--disable-ipc-flooding-protection'
-      ]
+        '--disable-gpu'
+      ],
+      headless: true,
+      executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || '/usr/bin/chromium-browser'
     };
-
-    // Only set executablePath in production if Chrome is available
-    if (process.env.NODE_ENV === 'production') {
-      // Try to use system Chrome, fallback to Puppeteer's bundled Chromium
-      try {
-        const fs = require('fs');
-        if (fs.existsSync('/usr/bin/google-chrome')) {
-          puppeteerConfig.executablePath = '/usr/bin/google-chrome';
-        } else if (fs.existsSync('/usr/bin/chromium-browser')) {
-          puppeteerConfig.executablePath = '/usr/bin/chromium-browser';
-        }
-        // If neither exists, let Puppeteer use its bundled version
-      } catch (error) {
-        console.log('Using Puppeteer bundled Chromium');
-      }
-    }
-
-    const browser = await puppeteer.launch(puppeteerConfig);
+  } else {
+    return {
+      headless: true
+    };
+  }
+}
+// Main function to generate PDF (same name as original)
+async function generatePDF(scanData, outputPath) {
+  let browser;
+  try {
+    console.log('🚀 Generating modern PDF report...');
+    
+    const config = getPuppeteerConfig();
+    console.log('Puppeteer config:', config);
+    
+    browser = await puppeteer.launch(config); // Use the config here
     
     const page = await browser.newPage();
     
@@ -602,14 +593,16 @@ async function generatePDF(scanData, outputPath) {
       displayHeaderFooter: false
     });
     
-    await browser.close();
-    
     console.log('✅ Modern PDF generated successfully:', outputPath);
     return outputPath;
     
   } catch (error) {
     console.error('❌ Error generating PDF:', error);
     throw error;
+  } finally {
+    if (browser) {
+      await browser.close();
+    }
   }
 }
 
